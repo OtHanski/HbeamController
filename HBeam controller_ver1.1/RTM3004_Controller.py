@@ -21,16 +21,18 @@ def FindDevices():
     # Note, at the moment the program is written specifically for USB.
     global Devices
     ResList=rm.list_resources()
+    ID =""
     
     for ResID in ResList:
-        instr = rm.open_resource(ResID)
-        ID = instr.query("*IDN?")
-        # Check for RTM3004
-        if ID == 'Rohde&Schwarz,RTM3004,1335.8794k04/103028,01.550\n' and ResID[0:3]=="USB":
-            Devices.append({"device": "RTM3004", "visaID": ResID})
-        # Check for Keysight Trueform
-        if ID == 'Agilent Technologies,33622A,MY53804342,A.02.00-2.25-03-64-02\n' and ResID[0:3]=="USB":
-            Devices.append({"device": "Trueform", "visaID": ResID})
+        if ResID[0:3]=="USB":
+            instr = rm.open_resource(ResID)
+            ID = instr.query("*IDN?")
+            # Check for RTM3004
+            if ID == 'Rohde&Schwarz,RTM3004,1335.8794k04/103028,01.550\n':
+                Devices.append({"device": "RTM3004", "visaID": ResID})
+            # Check for Keysight Trueform
+            if ID == 'Agilent Technologies,33622A,MY53804342,A.02.00-2.25-03-64-02\n':
+                Devices.append({"device": "Trueform", "visaID": ResID})
         
     # If RTM3004 was not found by the loop, give error message and quit.
 
@@ -80,6 +82,26 @@ else:
     filename = "testdata/test"
 fileext = ".dat"
 
+# Data root folder
+savefolder = "D:/Hbeam_Calib"
+# Save folder named by measurement day
+date = date.today()
+datestring = date.strftime("%Y-%m-%d")
+savefolder += "/" + datestring
+
+# Check if user specified a folder to use.
+foldindex = filename.rfind("/")
+if not foldindex == -1:
+    measfolder = "/"+filename[:foldindex]
+else:
+    measfolder = ""
+
+# Create folders if they don't exist yet
+if not os.path.exists(savefolder + measfolder):
+        os.makedirs(savefolder + measfolder)
+        print("Folder created: " + savefolder + measfolder)
+
+# If third system argument is given, it will be the delay.
 if len(sys.argv) == 4:
     delay = str(sys.argv[3])
 else:
@@ -108,17 +130,6 @@ OldWaveform = ""
 # Which channel is used for comparison
 ComparisonChannel = 1
 
-# Data root folder
-savefolder = "C:/Users/ottoh/Desktop/Oscilloscope/testdata"
-# Save folder named by measurement day
-date = date.today()
-datestring = date.strftime("%Y-%m-%d")
-savefolder += "/" + datestring
-
-# Create folders if they don't exist yet
-if not os.path.exists(savefolder + measfolder):
-        os.makedirs(savefolder + measfolder)
-        print("Folder created: " + savefolder + measfolder)
 
 ###############################################
 ###      GLOBAL VARIABLE ASSIGNMENT END     ###
